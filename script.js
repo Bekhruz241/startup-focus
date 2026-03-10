@@ -1,8 +1,86 @@
 // ==========================================
-// POMODORO TIMER LOGIC
+// STATE & AUTHENTICATION
+// ==========================================
+let isLoggedIn = localStorage.getItem('startupFocusAuth') === 'true';
+let customPomodoro = parseInt(localStorage.getItem('sf_pomodoro')) || 25;
+let customBreak = parseInt(localStorage.getItem('sf_break')) || 5;
+
+const authScreen = document.getElementById('authScreen');
+const appScreen = document.getElementById('appScreen');
+const googleSignInBtn = document.getElementById('googleSignInBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+
+function checkAuth() {
+    if (isLoggedIn) {
+        authScreen.classList.add('hidden');
+        setTimeout(() => {
+            authScreen.style.display = 'none';
+            appScreen.style.display = 'block';
+        }, 500);
+    } else {
+        appScreen.style.display = 'none';
+        authScreen.style.display = 'block';
+        authScreen.classList.remove('hidden');
+    }
+}
+
+googleSignInBtn.addEventListener('click', () => {
+    localStorage.setItem('startupFocusAuth', 'true');
+    isLoggedIn = true;
+    checkAuth();
+});
+
+logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('startupFocusAuth');
+    isLoggedIn = false;
+    checkAuth();
+});
+
+// Initialize Auth
+checkAuth();
+
+// ==========================================
+// SETTINGS MODAL
+// ==========================================
+const settingsBtn = document.getElementById('settingsBtn');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const settingsModal = document.getElementById('settingsModal');
+const pomodoroInput = document.getElementById('pomodoroLength');
+const breakInput = document.getElementById('breakLength');
+
+settingsBtn.addEventListener('click', () => {
+    pomodoroInput.value = customPomodoro;
+    breakInput.value = customBreak;
+    settingsModal.style.display = 'flex';
+});
+
+closeSettingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'none';
+});
+
+saveSettingsBtn.addEventListener('click', () => {
+    customPomodoro = parseInt(pomodoroInput.value) || 25;
+    customBreak = parseInt(breakInput.value) || 5;
+    
+    localStorage.setItem('sf_pomodoro', customPomodoro);
+    localStorage.setItem('sf_break', customBreak);
+    
+    settingsModal.style.display = 'none';
+    
+    // Automatically reset timer if not running
+    if (!isRunning) {
+        resetTimer();
+    }
+});
+
+
+// ==========================================
+// POMODORO TIMER LOGIC (UPDATED WITH CUSTOM)
 // ==========================================
 let timer;
-let timeLeft = 25 * 60; // 25 minutes default
+// initialize based on default or custom values
+let timeLeft = customPomodoro * 60; 
 let isRunning = false;
 let currentMode = 'pomodoro'; // 'pomodoro' or 'shortBreak'
 
@@ -22,7 +100,7 @@ function updateDisplay() {
     secondsDisplay.textContent = seconds.toString().padStart(2, '0');
     
     // Update Document Title to reflect timer
-    document.title = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} - StartupFocus`;
+    document.title = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} - Focus`;
 }
 
 function startTimer() {
@@ -55,7 +133,7 @@ function pauseTimer() {
 function resetTimer() {
     clearInterval(timer);
     isRunning = false;
-    timeLeft = currentMode === 'pomodoro' ? 25 * 60 : 5 * 60;
+    timeLeft = currentMode === 'pomodoro' ? customPomodoro * 60 : customBreak * 60;
     updateDisplay();
     startBtn.style.display = 'flex';
     pauseBtn.style.display = 'none';
@@ -84,7 +162,6 @@ function switchMode(mode) {
 }
 
 function playAlarm() {
-    // Simple beep using Web Audio API so we don't need external files
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
@@ -172,7 +249,6 @@ window.toggleTask = function(index) {
 };
 
 window.deleteTask = function(index) {
-    // Add fade out animation class before removing
     const item = taskList.children[index];
     item.style.animation = 'slideIn 0.3s ease-in reverse forwards';
     
@@ -180,10 +256,9 @@ window.deleteTask = function(index) {
         tasks.splice(index, 1);
         saveTasks();
         renderTasks();
-    }, 280); // Wait for animation to mostly finish
+    }, 280); 
 };
 
-// Utility to prevent XSS if used dynamically
 function escapeHTML(str) {
     return str.replace(/[&<>'"]/g, 
         tag => ({
@@ -196,12 +271,11 @@ function escapeHTML(str) {
     );
 }
 
-// Event Listeners for Tasks
 addTaskBtn.addEventListener('click', addTask);
 taskInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') addTask();
 });
 
 // Initialize on Load
-updateDisplay();
+resetTimer(); // ensures it takes the custom pomodoro value initially
 renderTasks();

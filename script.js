@@ -1,43 +1,161 @@
 // ==========================================
-// STATE & AUTHENTICATION
+// 1. FIREBASE AUTHENTICATION (TRUE LOGIN)
 // ==========================================
-let isLoggedIn = localStorage.getItem('startupFocusAuth') === 'true';
-let customPomodoro = parseInt(localStorage.getItem('sf_pomodoro')) || 25;
-let customBreak = parseInt(localStorage.getItem('sf_break')) || 5;
+// TODO FOR USER: Add your real Firebase config here from Firebase Console
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
 
 const authScreen = document.getElementById('authScreen');
 const appScreen = document.getElementById('appScreen');
 const googleSignInBtn = document.getElementById('googleSignInBtn');
 const logoutBtn = document.getElementById('logoutBtn');
+const userAvatar = document.getElementById('userAvatar');
+const authErrorMsg = document.getElementById('authErrorMsg');
 
-function checkAuth() {
-    if (isLoggedIn) {
-        authScreen.classList.add('hidden');
-        setTimeout(() => {
-            authScreen.style.display = 'none';
-            appScreen.style.display = 'block';
-        }, 500);
+let auth;
+let provider;
+
+try {
+    // Check if user changed the placeholder config
+    if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+        throw new Error("Please add your real Firebase API keys to script.js");
+    }
+    
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    provider = new firebase.auth.GoogleAuthProvider();
+
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // User is signed in
+            userAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName || 'User'}&background=3b82f6&color=fff`;
+            authScreen.classList.add('hidden');
+            setTimeout(() => {
+                authScreen.style.display = 'none';
+                appScreen.style.display = 'block';
+            }, 500);
+        } else {
+            // User is signed out
+            appScreen.style.display = 'none';
+            authScreen.style.display = 'block';
+            authScreen.classList.remove('hidden');
+        }
+    });
+
+    googleSignInBtn.addEventListener('click', () => {
+        auth.signInWithPopup(provider).catch((error) => {
+            console.error(error);
+            authErrorMsg.textContent = "Sign-in failed. Please try again.";
+        });
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        auth.signOut();
+    });
+
+} catch (e) {
+    console.error("Firebase setup error:", e.message);
+    authErrorMsg.style.color = "var(--accent-red)";
+    authErrorMsg.innerHTML = `<strong>Attention:</strong> ${e.message}.<br><br> <i>(For demo purposes, the button will now bypass login)</i>`;
+    
+    // Graceful fallback for demo if keys are strictly missing
+    let isMockLoggedIn = localStorage.getItem('studyFocusMockAuth') === 'true';
+    const checkMockAuth = () => {
+        if(isMockLoggedIn) {
+            authScreen.classList.add('hidden');
+            setTimeout(() => { authScreen.style.display = 'none'; appScreen.style.display = 'block'; }, 500);
+        } else {
+            appScreen.style.display = 'none';
+            authScreen.style.display = 'block';
+            authScreen.classList.remove('hidden');
+        }
+    };
+    checkMockAuth();
+    googleSignInBtn.addEventListener('click', () => {
+        localStorage.setItem('studyFocusMockAuth', 'true');
+        isMockLoggedIn = true;
+        checkMockAuth();
+    });
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('studyFocusMockAuth');
+        isMockLoggedIn = false;
+        checkMockAuth();
+    });
+}
+
+
+// ==========================================
+// 2. TRUE YOUTUBE IFRAME API LOGIC
+// ==========================================
+let ytPlayer;
+let isMusicPlaying = false;
+const musicPlayPauseBtn = document.getElementById('musicPlayPauseBtn');
+const musicVolume = document.getElementById('musicVolume');
+const musicStatus = document.getElementById('musicStatus');
+// Default Lofi livestream video ID (Lofi Girl)
+const VIDEO_ID = 'jfKfPfyJRdk'; 
+
+// This function is automatically called by the YT API script once it loads
+window.onYouTubeIframeAPIReady = function() {
+    ytPlayer = new YT.Player('ytPlayer', {
+        height: '0',
+        width: '0',
+        videoId: VIDEO_ID,
+        playerVars: {
+            'autoplay': 0,
+            'controls': 0,
+            'disablekb': 1,
+            'fs': 0,
+            'rel': 0,
+            'modestbranding': 1
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+};
+
+function onPlayerReady(event) {
+    // Enable controls once player is ready
+    musicPlayPauseBtn.disabled = false;
+    musicVolume.disabled = false;
+    musicStatus.textContent = "Ready to Focus";
+    musicVolume.value = ytPlayer.getVolume();
+    
+    musicPlayPauseBtn.addEventListener('click', toggleMusic);
+    musicVolume.addEventListener('input', (e) => {
+        ytPlayer.setVolume(e.target.value);
+    });
+}
+
+function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.PLAYING) {
+        isMusicPlaying = true;
+        musicPlayPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        musicStatus.textContent = "Playing Beats...";
     } else {
-        appScreen.style.display = 'none';
-        authScreen.style.display = 'block';
-        authScreen.classList.remove('hidden');
+        isMusicPlaying = false;
+        musicPlayPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        if (event.data == YT.PlayerState.PAUSED) {
+            musicStatus.textContent = "Paused";
+        }
     }
 }
 
-googleSignInBtn.addEventListener('click', () => {
-    localStorage.setItem('startupFocusAuth', 'true');
-    isLoggedIn = true;
-    checkAuth();
-});
-
-logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('startupFocusAuth');
-    isLoggedIn = false;
-    checkAuth();
-});
-
-// Initialize Auth
-checkAuth();
+function toggleMusic() {
+    if (isMusicPlaying) {
+        ytPlayer.pauseVideo();
+    } else {
+        ytPlayer.playVideo();
+    }
+}
 
 // ==========================================
 // SETTINGS MODAL

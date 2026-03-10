@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StartupFocus - Pomodoro & Task Manager</title>
+    <title>StudyFocus - Pomodoro & Task Manager</title>
     <link rel="stylesheet" href="style.css">
     <!-- Google Fonts: Outfit for a modern, premium look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,6 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs (using compat for simpler CDN scripting) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
     <div class="background-animation"></div>
@@ -18,13 +25,13 @@
     <!-- Authentication Screen -->
     <div id="authScreen" class="auth-container glass-panel">
         <div class="auth-content">
-            <i class="fa-solid fa-rocket auth-logo"></i>
-            <h2>Welcome to StartupFocus</h2>
-            <p>Sign in to sync your tasks and custom settings.</p>
+            <i class="fa-solid fa-graduation-cap auth-logo"></i>
+            <h2>Welcome to StudyFocus</h2>
+            <p>Sign in to sync your study tasks and custom timers.</p>
             <button id="googleSignInBtn" class="google-btn">
                 <i class="fa-brands fa-google"></i> Continue with Google
             </button>
-            <p class="auth-note">For this demo, clicking above will skip to the app without real auth.</p>
+            <p class="auth-note" id="authErrorMsg"></p>
         </div>
     </div>
 
@@ -32,8 +39,8 @@
     <div id="appScreen" class="container glass-panel" style="display: none;">
         <header>
             <div class="header-content">
-                <h1><i class="fa-solid fa-rocket"></i> StartupFocus</h1>
-                <p>Elevate your productivity</p>
+                <h1><i class="fa-solid fa-graduation-cap"></i> StudyFocus</h1>
+                <p>Elevate your concentration</p>
             </div>
             <div class="header-actions">
                 <button id="settingsBtn" class="icon-btn tooltip" data-tooltip="Settings">
@@ -68,13 +75,28 @@
             </div>
         </section>
 
-        <!-- Music Player Section -->
+        <!-- True Music Player Section (YouTube API) -->
         <section class="music-section">
             <div class="music-header">
-                <h3><i class="fa-solid fa-headphones"></i> Focus Beats</h3>
+                <h3><i class="fa-solid fa-headphones"></i> Lofi Study Beats</h3>
+                <span class="music-status" id="musicStatus">Loading...</span>
             </div>
-            <!-- Spotify Embed for Lofi Focus Music -->
-            <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0vvXsWCC9xrXsKd4Zsnsnj?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            
+            <div class="custom-music-controls">
+                <button id="musicPlayPauseBtn" class="music-btn play" disabled>
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <div class="volume-container">
+                    <i class="fa-solid fa-volume-low"></i>
+                    <input type="range" id="musicVolume" min="0" max="100" value="50" disabled>
+                    <i class="fa-solid fa-volume-high"></i>
+                </div>
+            </div>
+            
+            <!-- Hidden YouTube Player Container -->
+            <div id="ytPlayerContainer" style="position: absolute; width: 0; height: 0; overflow: hidden; left: -9999px;">
+                <div id="ytPlayer"></div>
+            </div>
         </section>
 
         <section class="task-section">

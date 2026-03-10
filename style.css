@@ -555,8 +555,8 @@ header {
 
 .music-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
     margin-bottom: 1rem;
 }
 
@@ -564,6 +564,84 @@ header {
     font-size: 1rem;
     font-weight: 500;
     color: var(--accent-purple);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.music-status {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.custom-music-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: rgba(0,0,0,0.2);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+}
+
+.music-btn {
+    background: var(--accent-purple);
+    color: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.music-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    background: #7c3aed;
+}
+
+.music-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex: 1;
+    color: var(--text-secondary);
+}
+
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 14px;
+    width: 14px;
+    border-radius: 50%;
+    background: var(--accent-purple);
+    cursor: pointer;
+    margin-top: -5px; 
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
 }
 
 /* Settings Modal */

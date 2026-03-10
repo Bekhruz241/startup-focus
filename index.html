@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StartupFocus - Pomodoro & Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Outfit for a modern, premium look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <div class="container glass-panel">
+        <header>
+            <h1><i class="fa-solid fa-rocket"></i> StartupFocus</h1>
+            <p>Elevate your productivity</p>
+        </header>
+
+        <section class="pomodoro-section">
+            <div class="timer-mode">
+                <button class="mode-btn active" id="pomodoroMode">Pomodoro</button>
+                <button class="mode-btn" id="shortBreakMode">Short Break</button>
+            </div>
+            
+            <div class="timer-display neon-glow">
+                <span id="minutes">25</span><span class="colon">:</span><span id="seconds">00</span>
+            </div>
+
+            <div class="timer-controls">
+                <button class="control-btn play-btn" id="startBtn">
+                    <i class="fa-solid fa-play"></i> Start
+                </button>
+                <button class="control-btn pause-btn" id="pauseBtn" style="display: none;">
+                    <i class="fa-solid fa-pause"></i> Pause
+                </button>
+                <button class="control-btn reset-btn" id="resetBtn">
+                    <i class="fa-solid fa-rotate-right"></i> Reset
+                </button>
+            </div>
+        </section>
+
+        <section class="task-section">
+            <div class="task-header">
+                <h2>Tasks for Today</h2>
+                <span id="taskCount" class="task-count">0</span>
+            </div>
+            
+            <div class="task-input-container">
+                <input type="text" id="taskInput" placeholder="What are you working on?">
+                <button id="addTaskBtn" class="add-task-btn">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+
+            <ul class="task-list" id="taskList">
+                <!-- Tasks will be injected here via JavaScript -->
+            </ul>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
